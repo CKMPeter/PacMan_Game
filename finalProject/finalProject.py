@@ -2,6 +2,7 @@ from email.mime import image
 from shutil import move
 from tkinter import *
 from tkinter import filedialog, ttk
+from tokenize import String
 from tracemalloc import start
 from turtle import update, width
 from PIL import Image, ImageTk, GifImagePlugin
@@ -46,6 +47,10 @@ start = -1
 flicker_time = 0
 powerup_counter = 0 
 start_up = 0
+moving = 0
+
+# variable for life increase / decrease
+life = 3
 
 eaten_ghost = [False, False, False, False]
 ghost_img = []
@@ -92,13 +97,19 @@ root.title('PAC MAN')
 root.configure(background= 'Black')
 root.geometry('1350x800') #level 1650x800
 #root.geometry('1650x800')
+
+
+#score initial
+score_display = StringVar()
+score_display.set("score: 0")
+
 topFrame = Canvas(root, bg = "Black", width = WIDTH, height = HEIGHT)
 topFrame.pack(padx = 200,side=LEFT)
 
 rightFrame = Frame(root, bg = "Black", width = 50, height = HEIGHT)
 rightFrame.pack(side=LEFT)
 
-topFrame1 = Frame(rightFrame, bg = "Black", width = WIDTH // 2 + 20, height = HEIGHT // 2)
+topFrame1 = Frame(rightFrame, bg = "Black", width = WIDTH // 4 + 20, height = HEIGHT // 4)
 topFrame1.pack()
 
 logoFrame = Image.open('logo/pacman.jpg').resize((WIDTH // 2 + 20, HEIGHT // 4))
@@ -107,17 +118,36 @@ logo = Label(topFrame1, bg = 'Black' ,image= logoFrame)
 logo.image = logoFrame
 logo.pack()
 
+topFrame2 = Frame(rightFrame, bg = "Black", width = WIDTH // 4 + 20, height = HEIGHT // 4)
+topFrame2.pack()
+
+score_frame = Label(topFrame2, textvariable= score_display, font= font, bg = 'Black', fg = 'White')
+score_frame.pack()
+
 botFrame1 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 botFrame1.pack(side=LEFT)
 
 botFrame2 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 
 #function
+
 #draw random
-def draw_random(): #sua ham nay
-    global PacMan
+def draw_random():
+    global PacMan, life
+    #life display 
+    if life >= 1:
+        topFrame.life = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.create_image(WIDTH - 20, HEIGHT - 50, image = topFrame.life, anchor = CENTER)
+    if life >= 2:
+        topFrame.life1 = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.create_image(WIDTH - 55, HEIGHT - 50, image = topFrame.life1, anchor = CENTER)
+    if life >= 3:
+        topFrame.life2 = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.create_image(WIDTH - 90, HEIGHT - 50, image = topFrame.life2, anchor = CENTER)
+    #power_up indication
     if PacMan.powerup == True:
-        topFrame.create_oval((WIDTH % 2) + num2, 750, (WIDTH % 2) + num2, 750, outline = color, width= 15)
+        topFrame.create_oval(num1 * 3, HEIGHT - 50, num1 * 3, HEIGHT - 50, outline = color, width= 20)
+    
         
 
 #init a board
@@ -141,7 +171,6 @@ def draw_board():
             if level[i][j] == 8 : # create corner 4
                topFrame.create_arc((j* num2 + (num2 * 0.5) , i * num1 - (0.5 * num1), j* num2 - (num2 * 0.65) , i * num1 + (0.5 * num1)), outline = color , width= 5, start = 0, extent = -90, style = ARC)  
             
-
             if level[i][j] == 9 : # create the white line
                 topFrame.create_line((j* num2 , i * num1 + (0.5 * num1), j* num2 + num2, i * num1 + (0.5 * num1)), fill = "white", width= 2)    
 
@@ -159,7 +188,7 @@ def draw_panel():
                                      'A-star Search')
     algorithms_combobox.current(0)
     algorithms_combobox.pack()
-    solve_button = Button(botFrame1, font = font ,text = "Solve", command = root.destroy)
+    solve_button = Button(botFrame1, font = font ,text = "Solve", command = solve_pacman)
     solve_button.pack(pady = 20)
     exit_button = Button(botFrame1, font = font ,text = "Stop", command = root.destroy)
     exit_button.pack(pady = 20)
@@ -181,7 +210,12 @@ def switch_edit_mode():
 def switch_main_mode():
     botFrame2.forget()
     botFrame1.pack(side=LEFT)
-    
+   
+def update_score(scor):
+    global score_display
+    score_display.set("score: " + str(scor))
+
+
 # Core Function
 #draw initil player
 def draw_initial_player():
@@ -252,7 +286,8 @@ def change_direction_player():
        PacMan.cdirection = 3
        PacMan.state = 1
        
-def change_ghost_direction(A): #need fixing
+def change_ghost_direction(A):
+    global direction
     A.turn_allowed = check_position(A)
     temp = []
     count_temp = 0 
@@ -263,10 +298,17 @@ def change_ghost_direction(A): #need fixing
              if count_temp > 2 :
                  A.state = -1
     if A.state == -1 :
-        A.cdirection = temp[random.randint(0,len(temp)-1)]
+        if A.name == 'pacman':
+            direction = temp[random.randint(0,len(temp)-1)]
+            change_direction_player()
+        else:
+            A.cdirection = temp[random.randint(0,len(temp)-1)]
         print (A.state)
         A.state = 1
-    move_ghost(A)
+    if A.name == 'pacman':
+        move_player()
+    else:
+        move_ghost(A)
 
     
   
@@ -448,10 +490,13 @@ def print_history():
     print(column)
     
 def start_game():
-    global start, state
+    global start
     start = 1
     PacMan.state = 1
     
+def solve_pacman():
+    global moving
+    moving = 1
 
 # key bind
 root.bind("a", move_left)
@@ -473,22 +518,27 @@ def main():
         #update board
         topFrame.delete('all')
         draw_board()
+        draw_random()
         draw_blinky(blinky)
         draw_pinky(pinky)
         draw_inky(inky)
         draw_clyde(clyde)
         if start != -1:
-            move_player()
             change_ghost_direction(blinky)
-            PacMan.turn_allowed = check_position(PacMan)
-            blinky.turn_allowed = check_position(blinky)
             change_ghost_direction(pinky)
             change_ghost_direction(inky)
             change_ghost_direction(clyde)
-            #check for turn avarible
+            if moving == 1 :
+                change_ghost_direction(PacMan)
+            else:
+                move_player()
+            PacMan.turn_allowed = check_position(PacMan)
+            blinky.turn_allowed = check_position(blinky)
+            
+            #sum score and update score
             score = check_collison(score)
-            #print("power up: ", PacMan.powerup)
-
+            update_score(score)
+            
             #debug console
             # for i in range (0, 4):
             #     print(PacMan.turn_allowed[i])

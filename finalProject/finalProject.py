@@ -114,7 +114,7 @@ botFrame1.pack(side=LEFT)
 botFrame2 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 
 #function
-
+topFrame.spooked = ImageTk.PhotoImage(spooked_img)
 #draw random
 def draw_random():
     global PacMan, life
@@ -311,7 +311,11 @@ def ghost_instance():
 
 def draw_ghost(A, B):
      #if (not PacMan.powerup and not A.dead) or (eaten_ghost[A.id]): 
-     topFrame.create_image(A.x, A.y, image= B, anchor=CENTER)
+     global PacMan
+     if PacMan.powerup != True:
+        topFrame.create_image(A.x, A.y, image= B, anchor=CENTER)
+     else:
+        topFrame.create_image(A.x, A.y, image= topFrame.spooked, anchor = CENTER)
 
   
 # moving the pacman
@@ -473,24 +477,27 @@ def print_history():
     # print(column)
     
 def start_game():
-    global start
+    global start, moving
+    if moving == 1:
+        moving = 0
     start = 1
     PacMan.state = 1
+    # key bind
+    bA = root.bind("a", move_left)
+    bL =root.bind("<Left>",move_left)
+    bS = root.bind("s", move_down)
+    bDw = root.bind("<Down>",move_down)
+    bW = root.bind("w", move_up)
+    bU = root.bind("<Up>",move_up)
+    bD = root.bind("d", move_right)
+    bR = root.bind("<Right>",move_right)
+    bP = root.bind("p", pause)
     
 def solve_pacman():
-    global moving
+    global moving, start
     moving = 1
-
-# key bind
-root.bind("a", move_left)
-root.bind("<Left>",move_left)
-root.bind("s", move_down)
-root.bind("<Down>",move_down)
-root.bind("w", move_up)
-root.bind("<Up>",move_up)
-root.bind("d", move_right)
-root.bind("<Right>",move_right)
-root.bind("p", pause)
+    start = 1
+    PacMan.state = 1
 
 # Initialize the player animation
 # change the direction of the player

@@ -1,4 +1,5 @@
 score = 0
+goal_score = 0
 desired_fps = 25
 frame = 0
 count = 0 #use for PacMan animation looping 
@@ -14,4 +15,8 @@ moving = 0
 # variable for life increase / decrease
 life = 3
 
+#control the flashing off the point
 flicker = False
+
+#settings
+color = 'Blue'

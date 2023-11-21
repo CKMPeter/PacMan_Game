@@ -33,7 +33,6 @@ num2 = (WIDTH // column)
 num3 = (num1 + num2) // 5 # 10
 player_imgs = []
 
-color = 'Blue'
 
 #widely used var
 eaten_ghost = [False, False, False, False]
@@ -304,19 +303,16 @@ def update_player(frame) :
     topFrame.create_image(PacMan.x, PacMan.y, image=topFrame.img, anchor= CENTER)
 
 # create each ghost on the screen
-def draw_blinky(A):
-     topFrame.img1 = ImageTk.PhotoImage(A.imgs[0]) 
+def ghost_instance():
+    topFrame.img1 = ImageTk.PhotoImage(blinky.imgs[0]) 
+    topFrame.img2 = ImageTk.PhotoImage(pinky.imgs[0])
+    topFrame.img3 = ImageTk.PhotoImage(inky.imgs[0])
+    topFrame.img4 = ImageTk.PhotoImage(clyde.imgs[0])    
+
+def draw_ghost(A, B):
      #if (not PacMan.powerup and not A.dead) or (eaten_ghost[A.id]): 
-     topFrame.create_image(A.x, A.y, image= topFrame.img1, anchor=CENTER)
-def draw_pinky(A):
-     topFrame.img2 = ImageTk.PhotoImage(A.imgs[0])
-     topFrame.create_image(A.x, A.y, image= topFrame.img2, anchor=CENTER)
-def draw_inky(A):
-     topFrame.img3 = ImageTk.PhotoImage(A.imgs[0])
-     topFrame.create_image(A.x, A.y, image= topFrame.img3, anchor=CENTER)
-def draw_clyde(A):
-     topFrame.img4 = ImageTk.PhotoImage(A.imgs[0])
-     topFrame.create_image(A.x, A.y, image= topFrame.img4, anchor=CENTER)
+     topFrame.create_image(A.x, A.y, image= B, anchor=CENTER)
+
   
 # moving the pacman
 def move_player():
@@ -457,22 +453,24 @@ def move_down(event):
     
 # other control    
 def pause(event):
-    global PacMan, mode
+    global PacMan, mode, goal_score
     PacMan.state = -1
     mode = 1
+    goal_score = goal_point(level)
+    print (goal_score)
     
 #end Function
 def print_history():
     print("--------------------------")
     for i in range (len(history)):
         print(f"{i +1}: ", history[i])    
-    print(blinky.center_x // num2)
-    print(blinky.center_y // num1)
-    print(num1)
-    print(num2)
-    print(num3)
-    print(row)
-    print(column)
+    # print(blinky.center_x // num2)
+    # print(blinky.center_y // num1)
+    # print(num1)
+    # print(num2)
+    # print(num3)
+    # print(row)
+    # print(column)
     
 def start_game():
     global start
@@ -498,16 +496,16 @@ root.bind("p", pause)
 # change the direction of the player
 #main 
 def main():
-    global PacMan, flicker_time, flicker, frame, count, score, state, powerup_counter
+    global PacMan, flicker_time, flicker, frame, count, score, state, powerup_counter, life
     if mode == 0 :
         #update board
         topFrame.delete('all')
         draw_board()
         draw_random()
-        draw_blinky(blinky)
-        draw_pinky(pinky)
-        draw_inky(inky)
-        draw_clyde(clyde)
+        draw_ghost(blinky, topFrame.img1)
+        draw_ghost(pinky, topFrame.img2)
+        draw_ghost(inky, topFrame.img3)
+        draw_ghost(clyde, topFrame.img4)
         if start != -1:
             change_ghost_direction(blinky)
             change_ghost_direction(pinky)
@@ -567,7 +565,7 @@ def main():
 # draw_board()
 draw_panel()
 # draw_initial_player()
-
+ghost_instance()
 main()
     
 root.mainloop()

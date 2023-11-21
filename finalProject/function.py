@@ -53,6 +53,17 @@ def slide_arr(arr):
 #     output_file,
 #     save_all = True,
 #     append_images=player_imgs[1:],
-#     duration=frame_duration,
+#     duration=frame_duration
 #     loop=0 
 # )
+
+def goal_point(A):
+    goal = 0
+    for i in range (len(A)):
+        for j in range (len(A[i])):
+            if A[i][j] == 1 :
+                goal += 10
+            if A[i][j] ==  2:
+                goal += 50
+    return goal
+                

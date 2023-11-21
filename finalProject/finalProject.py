@@ -18,11 +18,11 @@ from os import walk
 from board import *
 from player import *
 from style import *
+from variable import *
 
 
 #Variable
 #var change depend on level (Manually)
-
 level = level1 #import the boards matrix from board.py
 row = len(level) #32
 column = len(level[0]) #56
@@ -36,37 +36,22 @@ player_imgs = []
 color = 'Blue'
 
 #widely used var
-score = 0
-desired_fps = 25
-frame = 0
-count = 0 #use for PacMan animation looping 
-speed = 5
-frame = 0
-state = -1
-start = -1
-flicker_time = 0
-powerup_counter = 0 
-start_up = 0
-moving = 0
-
-# variable for life increase / decrease
-life = 3
-
 eaten_ghost = [False, False, False, False]
 ghost_img = []
-# bonus Var
 
+# bonus Var
 history = []
 mode = 0
 cheat_code = ['','','','']
 
-flicker = False
+
 #initial start location
 #PacMan inital
 PacMan = player('pacman',(row // 2) * num1 - num1, (column // 2) * num2 + (7 * num2), 0)
 player.add_frame(PacMan)
 player.powerup(PacMan)
 direction = 0
+player_imgs.append(PacMan.imgs[0])
 
 #Ghost inital
 blinky = ghost('blinky',num1 * 3, num2 * 2 + num3, 0)
@@ -134,15 +119,16 @@ botFrame2 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 #draw random
 def draw_random():
     global PacMan, life
+    
     #life display 
     if life >= 1:
-        topFrame.life = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.life = ImageTk.PhotoImage(player_imgs[0])
         topFrame.create_image(WIDTH - 20, HEIGHT - 50, image = topFrame.life, anchor = CENTER)
     if life >= 2:
-        topFrame.life1 = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.life1 = ImageTk.PhotoImage(player_imgs[0])
         topFrame.create_image(WIDTH - 55, HEIGHT - 50, image = topFrame.life1, anchor = CENTER)
     if life >= 3:
-        topFrame.life2 = ImageTk.PhotoImage(PacMan.imgs[0])
+        topFrame.life2 = ImageTk.PhotoImage(player_imgs[0])
         topFrame.create_image(WIDTH - 90, HEIGHT - 50, image = topFrame.life2, anchor = CENTER)
     #power_up indication
     if PacMan.powerup == True:
@@ -214,7 +200,6 @@ def switch_main_mode():
 def update_score(scor):
     global score_display
     score_display.set("score: " + str(scor))
-
 
 # Core Function
 #draw initil player

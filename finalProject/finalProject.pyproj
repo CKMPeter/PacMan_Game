@@ -22,7 +22,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="board.py" />
-    <Compile Include="algorithm.py" />
+    <Compile Include="variable.py" />
     <Compile Include="style.py" />
     <Compile Include="player.py" />
     <Compile Include="function.py" />

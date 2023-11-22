@@ -32,6 +32,7 @@ num1 = (HEIGHT - 50) // row #vertical
 num2 = (WIDTH // column)
 num3 = (num1 + num2) // 5 # 10
 player_imgs = []
+goal_score = goal_point(level)
 
 
 #widely used var
@@ -71,8 +72,8 @@ ghost.add_info(clyde, "orange", 3, True)
 ghost.target(clyde, PacMan.x, PacMan.y)
 
 #state of ghost
-spooked_img = Image.open('ghost/powerup.png').resize((30, 30))
-dead_img = Image.open('ghost/dead.png').resize((30, 30))
+spooked_img = Image.open('assets/ghost/powerup.png').resize((30, 30))
+dead_img = Image.open('assets/ghost/dead.png').resize((30, 30))
 
 #Begin program
 #start GUI
@@ -87,6 +88,12 @@ root.geometry('1350x800') #level 1650x800
 score_display = StringVar()
 score_display.set("score: 0")
 
+status_display = StringVar()
+current_status = "Chosing mode"
+status_display.set(str(current_status))
+
+
+
 topFrame = Canvas(root, bg = "Black", width = WIDTH, height = HEIGHT)
 topFrame.pack(padx = 200,side=LEFT)
 
@@ -96,7 +103,7 @@ rightFrame.pack(side=LEFT)
 topFrame1 = Frame(rightFrame, bg = "Black", width = WIDTH // 4 + 20, height = HEIGHT // 4)
 topFrame1.pack()
 
-logoFrame = Image.open('logo/pacman.jpg').resize((WIDTH // 2 + 20, HEIGHT // 4))
+logoFrame = Image.open('assets/logo/pacman.jpg').resize((WIDTH // 2 + 20, HEIGHT // 4))
 logoFrame = ImageTk.PhotoImage(logoFrame)
 logo = Label(topFrame1, bg = 'Black' ,image= logoFrame)
 logo.image = logoFrame
@@ -108,15 +115,21 @@ topFrame2.pack()
 score_frame = Label(topFrame2, textvariable= score_display, font= font, bg = 'Black', fg = 'White')
 score_frame.pack()
 
+game_status = Label(topFrame2, textvariable= status_display, font = font, bg = 'Black', fg = 'White')
+game_status.pack()
+
 botFrame1 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 botFrame1.pack(side=LEFT)
 
 botFrame2 = Frame(rightFrame, bg = "Black", width = 50, height = HEIGHT // 2)
 
+
+
 #function
 topFrame.spooked = ImageTk.PhotoImage(spooked_img)
+topFrame.dead = ImageTk.PhotoImage(dead_img)
 #draw random
-def draw_random():
+def draw_random(index):
     global PacMan, life
     
     #life display 
@@ -132,6 +145,8 @@ def draw_random():
     #power_up indication
     if PacMan.powerup == True:
         topFrame.create_oval(num1 * 3, HEIGHT - 50, num1 * 3, HEIGHT - 50, outline = color, width= 20)
+        
+    status_display.set(str(current_status) + str(loading[index]))
     
         
 
@@ -199,7 +214,11 @@ def switch_main_mode():
 def update_score(scor):
     global score_display
     score_display.set("score: " + str(scor))
-
+    
+def update_game_status(state):
+    global current_status
+    current_status = state
+    
 # Core Function
 #draw initil player
 def draw_initial_player():
@@ -311,13 +330,21 @@ def ghost_instance():
 
 def draw_ghost(A, B):
      #if (not PacMan.powerup and not A.dead) or (eaten_ghost[A.id]): 
-     global PacMan
+     global PacMan, eaten_ghost, life, hit
      if PacMan.powerup != True:
         topFrame.create_image(A.x, A.y, image= B, anchor=CENTER)
+        if (A.center_x // num1 == PacMan.center_x // num1 and A.center_y // num2 == PacMan.center_y // num2 and hit == False):
+           life -= 1
+           hit = True
      else:
-        topFrame.create_image(A.x, A.y, image= topFrame.spooked, anchor = CENTER)
-
-  
+        if (A.center_x // num1 == PacMan.center_x // num1 and A.center_y // num2 == PacMan.center_y // num2):
+            eaten_ghost[A.id] = True
+        if eaten_ghost[A.id] == True :
+            topFrame.create_image(A.x, A.y, image= topFrame.dead, anchor = CENTER)
+        else:
+            topFrame.create_image(A.x, A.y, image= topFrame.spooked, anchor = CENTER)
+            
+         
 # moving the pacman
 def move_player():
     if PacMan.state == 1:
@@ -482,6 +509,7 @@ def start_game():
         moving = 0
     start = 1
     PacMan.state = 1
+    update_game_status('Playing')
     # key bind
     bA = root.bind("a", move_left)
     bL =root.bind("<Left>",move_left)
@@ -498,22 +526,25 @@ def solve_pacman():
     moving = 1
     start = 1
     PacMan.state = 1
+    update_game_status('Solving')
 
 # Initialize the player animation
 # change the direction of the player
 #main 
 def main():
-    global PacMan, flicker_time, flicker, frame, count, score, state, powerup_counter, life
+    global PacMan, flicker_time, flicker, frame, count, score, state, powerup_counter, life, eaten_ghost, hit, mode, start, index
     if mode == 0 :
         #update board
         topFrame.delete('all')
         draw_board()
-        draw_random()
         draw_ghost(blinky, topFrame.img1)
         draw_ghost(pinky, topFrame.img2)
         draw_ghost(inky, topFrame.img3)
         draw_ghost(clyde, topFrame.img4)
+        if index == 4:
+            index = 0
         if start != -1:
+            
             change_ghost_direction(blinky)
             change_ghost_direction(pinky)
             change_ghost_direction(inky)
@@ -528,7 +559,12 @@ def main():
             #sum score and update score
             score = check_collison(score)
             update_score(score)
-            
+            if score == goal_score:
+                update_game_status('WIN!')
+                start = -1
+            if life == 0:
+                start = -1
+                update_game_status('Game Over!')
             #debug console
             # for i in range (0, 4):
             #     print(PacMan.turn_allowed[i])
@@ -544,8 +580,10 @@ def main():
                 if count > 1:
                     flicker = False
             else:
+                index += 1
                 flicker = True
                 count = 0
+                hit = False
 
             for i in range (0, 4):
                 if direction == i and PacMan.turn_allowed[i]:
@@ -559,8 +597,10 @@ def main():
                 powerup_counter = 0
                 PacMan.powerup = False
                 eaten_ghost = [False, False, False, False]
+            draw_random(index)  
+            
 
-            draw_random()       
+            
         else:
             draw_initial_player()
         root.after(1000 // desired_fps, main)

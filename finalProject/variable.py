@@ -11,6 +11,9 @@ flicker_time = 0
 powerup_counter = 0 
 start_up = 0
 moving = 0
+hit = False
+loading = ['','.','..','...',''] 
+index = 0
 
 # variable for life increase / decrease
 life = 3

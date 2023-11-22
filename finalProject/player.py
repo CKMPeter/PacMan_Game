@@ -17,7 +17,7 @@ class player(something_moves):
         self.powerup = False
     def add_frame(self):
         for i in range (1, 5):
-            self.imgs.append(Image.open(f'player/{i}.png').resize((30,30)))
+            self.imgs.append(Image.open(f'assets/player/{i}.png').resize((30,30)))
             
 class ghost(something_moves):
         
@@ -28,7 +28,7 @@ class ghost(something_moves):
         self.target_y = player_y
     def add_info(self, file, Id, box):
         self.id = Id
-        self.imgs.append(Image.open(f'ghost/{file}.png').resize((30, 30)))
+        self.imgs.append(Image.open(f'assets/ghost/{file}.png').resize((30, 30)))
         self.in_box = box
         #self.turns, self.in_box = self.check_collisions()
         # self.rect = self.draw()
